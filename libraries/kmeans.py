@@ -1,71 +1,49 @@
-#Assign ALL points to closest centroid
-def assign(data,labels,centroid):
+#Assign ALL points to closest centroid     
+def assign(data,centroids):
     #Keeps track of when to stop
-    keepgoing=True
-    while keepgoing==False:
+    changed=True
+    while changed==True:
         #for all points
         for point in data:
-            total=0
-            centCloseness={}
-            #for for each centroid
-            for cent in centroid:
-                #calculate the euclidean distance and record
-                for d in len(data[0]):
-                    total+=(point[d]-cen[d])**2
-                total=sqrt(total)
-                cenCloseness[cent[0]]=total
-                total=0
-            #Check which is closest and apply
-            closest=min(cenCloseness, key=cenCloseness.get)
-            labels[point] = closest
-
+            #create an array with all the distances from the point to the centroids
+            dist=np.sqrt(np.sum((point[:,1:]-centroids)**2, axis=1))
+            #Grab the centorid that's closest
+            cluster=np.argmin(dist)    
+            #Record the closest centroid cluster
+            point[0]=cluster
         #update centroids
         keepgoing=update(data, labels, centroid)
     
     
 def update(data, labels, centroid):
-    #Readjust centroids to mean of cluster
-    #Keep track of means
-    for cent in centroid:
-        dimension=[]
-        for i in len(data[0]):
-            dimension.append(0)
-        meanCounts[cent]=dimension
-    #Calculate the mean location
-    for point in data:
-        for i in len(point):
-            meanCounts[labels[point]]+=point
-    #Calculate the final mean
-    for cent in centroid:
-        total=labels.count(cent)
-        if total!=0:
-            meanCounts[cent]=meanCounts[cent]/total
-        else:
-            #Keep centroid in the same place
-            meanCounts[cent]=-1
-        
+    change=False
+    #Calculate the totals for each different clusters
+    for i in str(len(centroid)):
+        item=np.mean(data[np.where(data[:,0]==i)], axis=0)
+        #If there was a change
+        if centroid[i]!=item:
+            centroid[i]=item
+            change=True
     #Check if centroid already located in calculated spot
-    for item in meanCounts.values():
-        if item!=-1 or item!=0:
-            return True
-        else: #keep going!
-            return False
+    if change==True:
+        return True
+    else: #keep going!
+        return False
 
     
 def kmean(data, k):
     import random
-    #Grab vector dimension
-    dimension=len(data[0])
-    #Create column representing clusters
-    clusterlist={}
-    centroidLocations = []
-    #For all k, randomize starting position
-    for i in k:
-        tup=[]
-        for d in dimension:
-            tup.append(random.randint)
-        centroidLocations.append((k, tup))
-        
-    assign(data, centroidLocations, clusterlist)
-    return (data, centroidLocations, clusterlist)
+    #Create column representing clusters to the data
+    clusterlist = np.zeros_like((1,len(data)))
+    newdata=np.append(clusterlist, data, axis=1)
+    print(newdata)
+    
+    #Create the list of centroids with random starting locations
+    legnthy=len(data[0])
+    print(legnthy)
+    centroids = np.random.rand(k,len(data[0]))
+       
+    #Start assigning the points to clusters
+    assign(newdata, centroids)
+    return newdata
     
